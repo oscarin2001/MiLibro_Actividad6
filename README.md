@@ -1,93 +1,67 @@
-# Bienvenido a tu app Expo 👋
+# Libros RN (Expo)
 
-Este es un proyecto de [Expo](https://expo.dev) creado con [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación React Native (Expo) que busca libros en Google Books, muestra detalles en modal y permite guardar “Favoritos” localmente.
 
-## Primeros pasos
+## Características
+- Consumo de API compleja: Google Books.
+- Búsqueda: título, autores, miniatura.
+- Detalles en modal: portada, título, autores, descripción, fecha de publicación.
+- Favoritos locales:
+  - Android/iOS: SQLite (expo-sqlite).
+  - Web: localStorage (fallback).
+- Navegación con Expo Router.
+- Manejo de carga y errores en búsqueda y detalles.
 
-1. Instala dependencias
+## Stack
+- React Native + Expo SDK 53
+- Expo Router
+- Google Books API
+- Almacenamiento local: `expo-sqlite` (nativo) / `localStorage` (web)
+- TypeScript
 
-   ```bash
-   npm install
-   ```
+## Estructura
+- [app/_layout.tsx](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/app/_layout.tsx:0:0-0:0): Stack + init BD. `book/[id]` como modal.
+- [app/index.tsx](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/app/index.tsx:0:0-0:0): Búsqueda y lista de resultados.
+- `app/book/[id].tsx`: Detalles + Añadir/Quitar Favoritos (modal).
+- [app/favorites.tsx](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/app/favorites.tsx:0:0-0:0): Lista y eliminación de favoritos.
+- [lib/api.ts](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/lib/api.ts:0:0-0:0): Cliente Google Books (search, getById).
+- [lib/db.ts](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/lib/db.ts:0:0-0:0): Encaminador por plataforma hacia:
+  - [lib/db.native.ts](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/lib/db.native.ts:0:0-0:0) (SQLite en dispositivos)
+  - [lib/db.web.ts](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/lib/db.web.ts:0:0-0:0) (localStorage en web)
+- [metro.config.js](cci:7://file:///c:/Users/oscar/Desktop/App_Clima/my-app/metro.config.js:0:0-0:0): Soporte `.wasm` si hiciera falta (evitado con fallback web).
 
-2. Inicia la app
+## Ejecución
+1) Instalar dependencias:
+   - npm install
+2) Arrancar (caché limpio recomendado):
+   - npx expo start -c
+3) Plataformas:
+   - Android: npm run android
+   - iOS: npm run ios
+   - Web: npm run web
 
-   ```bash
-   npx expo start
-   ```
+Si la web muestra advertencias de tipos de rutas, reinicia con caché limpio. En web, Favoritos usa localStorage.
 
-En la salida verás opciones para abrir la app en:
+## Uso
+1) En la pantalla principal, busca (ej. “harry potter”) y pulsa “Buscar”.
+2) Abre un resultado para ver detalles (modal).
+3) Pulsa “Añadir a Favoritos”.
+4) Ve a “Favoritos” para ver/retirar guardados.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Emulador de Android](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [Simulador de iOS](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), un entorno limitado para probar desarrollo con Expo
+## API
+- Búsqueda: GET `https://www.googleapis.com/books/v1/volumes?q=<query>&maxResults=20`
+- Detalle: GET `https://www.googleapis.com/books/v1/volumes/<id>`
 
-Puedes empezar a desarrollar editando los archivos dentro del directorio **app**. Este proyecto usa [enrutamiento basado en archivos](https://docs.expo.dev/router/introduction).
+No es necesaria API Key para búsquedas básicas (se puede parametrizar si se desea).
 
-## Nuevo: pestaña Clima
+## Notas
+- Prisma no se usa en apps RN para almacenamiento local (es para backend/Node). En dispositivo se usa SQLite.
+- En web evitamos WASM/SharedArrayBuffer usando localStorage.
+- Detalles se muestra como modal para mejor UX.
 
-Agregamos una nueva pestaña para consultar el clima con una interfaz de tema animalista.
+## Mejoras posibles
+- Filtros avanzados (autor, fecha, categorías).
+- Paginación/infinite scroll.
+- Cache de resultados.
+- Sincronización remota de favoritos.
 
-- **Archivo de pantalla**: `app/(tabs)/clima.tsx`
-- **Registro en tabs**: `app/(tabs)/_layout.tsx` (nombre de ruta: `clima`)
-
-### Cómo usar
-
-1. Inicia la app: `npx expo start`.
-2. Abre la app y navega a la pestaña "Clima".
-3. Ingresa una ciudad y toca "Buscar" para obtener el clima actual desde OpenWeather.
-
-### Características
-
-- UI con estilo animalista y emojis que reaccionan a las condiciones del clima.
-- Estado de carga y manejo de errores para ciudades inválidas o problemas con la API.
-- Métricas mostradas: temperatura, sensación térmica, descripción (en español), humedad, viento.
-
-### Configuración (API Key)
-
-La pantalla actualmente usa una API key de OpenWeather embebida en `app/(tabs)/clima.tsx` (`API_KEY`). Para producción, es mejor usar variables de entorno:
-
-- Agrega tu clave en `app.json` o `app.config.ts` bajo `extra`.
-- Léela con `expo-constants`.
-
-Example (app.config.ts):
-
-```ts
-import 'dotenv/config';
-export default ({ config }) => ({
-  ...config,
-  extra: { OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY },
-});
-```
-
-Luego, en la pantalla:
-
-```ts
-import Constants from 'expo-constants';
-const API_KEY = Constants.expoConfig?.extra?.OPENWEATHER_API_KEY as string;
-```
-
-## Reiniciar proyecto
-
-Cuando estés listo, ejecuta:
-
-```bash
-npm run reset-project
-```
-
-Este comando moverá el código de inicio al directorio **app-example** y creará un directorio **app** en blanco para que comiences a desarrollar.
-
-## Aprende más
-
-Para aprender más sobre cómo desarrollar tu proyecto con Expo, revisa estos recursos:
-
-- [Documentación de Expo](https://docs.expo.dev/): Aprende lo fundamental o profundiza con nuestras [guías](https://docs.expo.dev/guides).
-- [Tutorial de Expo](https://docs.expo.dev/tutorial/introduction/): Sigue un tutorial paso a paso para crear un proyecto que corre en Android, iOS y web.
-
-## Únete a la comunidad
-
-Únete a nuestra comunidad de desarrolladores creando apps universales.
-
-- [Expo en GitHub](https://github.com/expo/expo): Mira nuestra plataforma open source y contribuye.
-- [Comunidad en Discord](https://chat.expo.dev): Chatea con usuarios de Expo y haz preguntas.
